@@ -1,0 +1,13 @@
+/debug/*
+/release/*
+*.Debug
+*.Release
+Makefile
+.qmake.stash
+*.user
+ui*.h
+Find*.cmake
+graph_info.json
+conaninfo.txt
+conanbuildinfo.txt
+conan.lock
