@@ -2,6 +2,8 @@
 
 Repository that contains all the thirdparty dependencies that are needed in order to build OpenTwin.
 
+All librarise in this repository are publicly available in the [OpenTwin Artifactory](https://artifactory.opentwin.net)!
+
 ## Prerequisites
 
 ### Tools
@@ -35,14 +37,14 @@ To upload a package to the Artifactory, the following steps are required:
    ```
    cd base64
    ```
-2. Install any third-party libraries that might be missing, for both `debug` and `release` profiles:
+2. Install any third-party libraries that might be missing, for both `debug` and `default` profiles:
    ```
    conan install --build missing --options *:shared=True --profile default .
    conan install --build missing --options *:shared=True --profile debug .
    ```
-3. Create the package for both `debug` and `release`: 
+3. Create the package for both `debug` and `default`: 
    ```bash
-   conan create . opentwin/thirdparty --options *:shared=True --profile release
+   conan create . opentwin/thirdparty --options *:shared=True --profile default
    conan create . opentwin/thirdparty --options *:shared=True --profile debug
    ```
    This will build the package for you build configuration and install the created artifacts.
