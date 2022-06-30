@@ -1,18 +1,19 @@
-from conans import ConanFile, CMake, tools
+from conans import ConanFile, tools
+from conan.tools.cmake import CMake, CMakeToolchain
 import os
 import sys
 from pathlib import Path
 
-required_conan_version = '>=1.33.0'
+required_conan_version = '>=1.50.0'
 
 class TabToolbarConan(ConanFile):
     name = "TabToolbar"
-    version = "1.0.0"
+    version = "1.0.1"
     url = "https://github.com/SeriousAlexej/TabToolbar/tree/a22ed2a4885b252c4d49cb43f82d71e10d0ec51e"
     description = "TabToolbar is a small library, meant to be used with Qt, that provides a few classes for creating of tabbed toolbars."
     license = "LGPL-3.0-only"
     generators = "cmake_find_package"
-    settings = "os", "arch", "compiler"
+    settings = "os", "arch", "compiler", "build_type"
     exports_sources = "CMakeLists.txt", "src/*", "include/*", "COPYING", "COPYING.LESSER", "LICENSE"
     options = {"shared": [True, False], "fPIC": [True, False]}
     default_options = {
@@ -30,6 +31,10 @@ class TabToolbarConan(ConanFile):
     def config_options(self):
         if self.settings.os == "Windows":
             del self.options.fPIC
+
+    def generate(self):
+        tc = CMakeToolchain(self)
+        tc.generate()
 
     def build(self):
         cmake = CMake(self)

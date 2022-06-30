@@ -26,9 +26,8 @@
 #include <QStylePainter>
 #include <QStyleOptionToolButton>
 #include <QResizeEvent>
-#include <QScreen>
-#include <TabToolbar/StyleTools.h>
 #include <TabToolbar/TabToolbar.h>
+#include <TabToolbar/StyleTools.h>
 #include "CompactToolButton.h"
 #include "ToolButtonStyle.h"
 
@@ -128,7 +127,7 @@ CompactToolButton::CompactToolButton(QAction* action, QMenu* menu, QWidget* pare
 {
     overlay = new TTOverlayToolButton(this);
 
-    const int iconSize = GetPixelMetric(QStyle::PM_LargeIconSize) * GetScaleFactor(*this);
+    const int iconSize = QApplication::style()->pixelMetric(QStyle::PM_LargeIconSize);
     upButton = new QToolButton(this);
     upButton->setProperty("TTInternal", QVariant(true));
     upButton->setAutoRaise(true);

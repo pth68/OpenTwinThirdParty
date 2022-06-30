@@ -41,36 +41,48 @@ public:
     virtual ~TabToolbar();
 
     void     SetSpecialTabEnabled(bool enabled);
-    Page*    AddPage(const QString& pageName);
+    Page*    AddPage(const QString& pageName);						// Changed by Alexander Kuester (uiCore)
     QAction* HideAction();
     void     AddCornerAction(QAction* action);
-    void     SetStyle(const QString& styleName);
+    void     SetStyle(const QString& styleName);					// Changed by Alexander Kuester (uiCore)
     QString  GetStyle() const;
     unsigned RowCount() const;
     unsigned GroupMaxHeight() const;
     int      CurrentTab() const;
+	int      TabCount() const;										// Created by Alexander Kuester (uiCore)
     void     SetCurrentTab(int index);
-
+	void     SetAllowDoubleClickOnTab(bool allow);					// Created by Alexander Kuester (uiCore)
+	void     SetStylesheet(const QString& styleSheet);				// Created by Alexander Kuester (uiCore)
+    void     SetTabBarStylesheet(const QString& styleSheet);		// Created by Alexander Kuester (uiCore)
+	void     SetTabBarTabStylesheet(const QString& styleSheet);		// Created by Alexander Kuester (uiCore)
+	void     SetHideButtonStylesheet(const QString& styleSheet);	// Created by Alexander Kuester (uiCore)
+	void	 DestroyPage(int index);								// Created by Alexander Kuester (uiCore)
+	void	 DestroyPage(Page * page);								// Created by Alexander Kuester (uiCore)
+	QTabWidget *	tabWidget(void) const { return tabBar; }		// Created by Alexander Kuester (uiCore)
 signals:
     void     Minimized();
     void     Maximized();
     void     SpecialTabClicked();
     void     StyleChanged();
+	void	 tabClicked(int index);									// Created by Alexander Kuester (uiCore)
+	void	 currentTabChanged(int index);							// Created by Alexander Kuester (uiCore)
 
 private slots:
     void     FocusChanged(QWidget* old, QWidget* now);
-    void     TabClicked(int index);
-    void     CurrentTabChanged(int index);
+    void     TabClicked(int index);									// Changed by Alexander Kuester (uiCore)
+	void     TabDoubleClicked(int index);							// Created by Alexander Kuester (uiCore)
+    void     CurrentTabChanged(int index);							// Changed by Alexander Kuester (uiCore)
     void     HideAt(int index = -1);
     void     HideTab(int index);
     void     ShowTab(int index);
 
 protected:
-    bool     event(QEvent* event) override;
+    bool     event(QEvent* event) override;							// Changed by Alexander Kuester (uiCore)
 
 private:
     void     AdjustVerticalSize(unsigned vSize);
 
+	bool           allowDoubleClickOnTab = true;					// Added by Alexander Kuester (uiCore)
     const unsigned groupRowCount;
     const unsigned groupMaxHeight;
     bool           hasSpecialTab = false;
@@ -87,10 +99,10 @@ private:
     QTimer         tempShowTimer;
     std::unique_ptr<StyleParams> style;
 
+	std::vector<Page *>	pages;
+
     friend class Page;
 };
-
-TabToolbar* _FindTabToolbarParent(QWidget& startingWidget);
 
 }
 #endif

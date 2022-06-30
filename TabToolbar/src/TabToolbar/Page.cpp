@@ -23,7 +23,6 @@
 #include <QWheelEvent>
 #include <QScrollBar>
 #include <QEvent>
-#include <stdexcept>
 #include <TabToolbar/TabToolbar.h>
 #include <TabToolbar/Page.h>
 #include <TabToolbar/Group.h>
@@ -53,6 +52,7 @@ protected:
 };
 }
 
+// Modified by Alexander Kuester
 Page::Page(int index, const QString& pageName, QWidget* parent)
     : QWidget(parent),
       myIndex(index)
@@ -79,9 +79,9 @@ Page::Page(int index, const QString& pageName, QWidget* parent)
     innerArea->setProperty("TTPage", QVariant(true));
     innerLayout = new QHBoxLayout(innerArea);
     innerLayout->setContentsMargins(0, 0, 0, 0);
-    innerLayout->setSpacing(2);
+    innerLayout->setSpacing(1);	// Changed to 1 by Alexander Kuester
 
-    QSpacerItem* spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
+    QSpacerItem* spacer = new QSpacerItem(1, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
     innerLayout->addItem(spacer);
 
     scrollArea->setWidget(innerArea);
@@ -92,14 +92,20 @@ Group* Page::AddGroup(const QString& name)
 {
     Group* grp = new Group(name, innerArea);
     innerLayout->insertWidget(innerLayout->count()-1, grp);
-
-    auto* parentTT = _FindTabToolbarParent(*this);
-    if (!parentTT)
-        throw std::runtime_error("Page should be constructed inside TabToolbar!");
-
-    parentTT->AdjustVerticalSize(grp->height());
+    QObject* parent = this;
+    TabToolbar* tt = nullptr;
+    do
+    {
+        parent = parent->parent();
+        tt = dynamic_cast<TabToolbar*>(parent);
+    } while(tt == nullptr);
+    tt->AdjustVerticalSize(grp->height());
     return grp;
 }
+
+int Page::getIndex(void) const { return myIndex; }
+
+void Page::setIndex(int index) { myIndex = index; }
 
 void Page::hide()
 {

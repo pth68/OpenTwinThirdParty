@@ -24,12 +24,11 @@
 #include <QApplication>
 #include <QFrame>
 #include <QTimer>
-#include <QScreen>
-#include <stdexcept>
 #include <TabToolbar/TabToolbar.h>
 #include <TabToolbar/Page.h>
 #include <TabToolbar/Styles.h>
 #include <TabToolbar/StyleTools.h>
+#include <cassert>
 
 using namespace tt;
 
@@ -51,6 +50,7 @@ TabToolbar::TabToolbar(QWidget* parent, unsigned _groupMaxHeight, unsigned _grou
     setMovable(false);
     setAllowedAreas(Qt::TopToolBarArea);
     tabBar = new QTabWidget(this);
+	tabBar->setContextMenuPolicy(Qt::ContextMenuPolicy::NoContextMenu);
     tabBar->setProperty("TTWidget", QVariant(true));
     tabBar->tabBar()->setProperty("TTTab", QVariant(true));
     tabBarHandle = addWidget(tabBar);
@@ -88,7 +88,9 @@ TabToolbar::TabToolbar(QWidget* parent, unsigned _groupMaxHeight, unsigned _grou
         else
             emit Maximized();
     });
-    QObject::connect(tabBar, &QTabWidget::tabBarDoubleClicked, hideAction, &QAction::trigger);
+	// Changed by Alexander Kuester
+    //QObject::connect(tabBar, &QTabWidget::tabBarDoubleClicked, hideAction, &QAction::trigger);
+	QObject::connect(tabBar, &QTabWidget::tabBarDoubleClicked, this, &TabToolbar::TabDoubleClicked);
     QObject::connect(tabBar, &QTabWidget::tabBarClicked, this, &TabToolbar::TabClicked);
     QObject::connect(tabBar, &QTabWidget::currentChanged, this, &TabToolbar::CurrentTabChanged);
     QObject::connect((QApplication*)QApplication::instance(), &QApplication::focusChanged, this, &TabToolbar::FocusChanged);
@@ -102,14 +104,15 @@ TabToolbar::~TabToolbar()
 {
 }
 
+// Changed by Alexander Kuester
 bool TabToolbar::event(QEvent* event)
 {
-    if(event->type() == QEvent::StyleChange && !ignoreStyleEvent)
+    /*if(event->type() == QEvent::StyleChange && !ignoreStyleEvent)
         QTimer::singleShot(0, this, [this]()
         { // on KDE new palette is not ready yet, wait
             const QString styleName = (style ? style->objectName() : GetDefaultStyle());
             SetStyle(styleName);
-        });
+        }); */
     return QToolBar::event(event);
 }
 
@@ -140,11 +143,13 @@ unsigned TabToolbar::RowCount() const
 
 unsigned TabToolbar::GroupMaxHeight() const
 {
-    return groupMaxHeight * GetScaleFactor(*this);
+    return groupMaxHeight;
 }
 
+// Changed by Alexander Kuester
 void TabToolbar::SetStyle(const QString& styleName)
 {
+	return;	// New
     ignoreStyleEvent = true;
     style.reset(CreateStyle(styleName).release());
     setStyleSheet(GetSheetForStyle(*style));
@@ -185,6 +190,7 @@ QAction* TabToolbar::HideAction()
     return hideAction;
 }
 
+// Changed by Alexander Kuester
 void TabToolbar::TabClicked(int index)
 {
     if(tempShowTimer.isActive() || (index == 0 && hasSpecialTab))
@@ -198,8 +204,15 @@ void TabToolbar::TabClicked(int index)
         HideAt(index);
         isMinimized = true;
     }
+
+	emit tabClicked(index);
 }
 
+void TabToolbar::TabDoubleClicked(int index) {
+	if (allowDoubleClickOnTab) hideAction->trigger();
+}
+
+// Changed by Alexander Kuester
 void TabToolbar::CurrentTabChanged(int index)
 {
     QSignalBlocker blocker(tabBar);
@@ -211,6 +224,7 @@ void TabToolbar::CurrentTabChanged(int index)
     else
     {
         currentIndex = index;
+		emit currentTabChanged(index);
     }
 }
 
@@ -219,9 +233,16 @@ int TabToolbar::CurrentTab() const
     return currentIndex;
 }
 
+// Created by Alexander Kuester
+int TabToolbar::TabCount() const { return tabBar->count(); }
+
 void TabToolbar::SetCurrentTab(int index)
 {
     tabBar->setCurrentIndex(index);
+}
+
+void TabToolbar::SetAllowDoubleClickOnTab(bool allow) {
+	allowDoubleClickOnTab = allow;
 }
 
 void TabToolbar::HideAt(int index)
@@ -290,18 +311,40 @@ Page* TabToolbar::AddPage(const QString& pageName)
     QObject::connect(page, &Page::Hiding, this, &TabToolbar::HideTab);
     QObject::connect(page, &Page::Showing, this, &TabToolbar::ShowTab);
     tabBar->addTab(page, pageName);
+	pages.push_back(page);
     return page;
 }
 
-TabToolbar* tt::_FindTabToolbarParent(QWidget& startingWidget)
-{
-    QObject* par = &startingWidget;
-    do
-    {
-        par = par->parent();
-        if(auto* tt = dynamic_cast<TabToolbar*>(par))
-            return tt;
-    } while(par);
+// Created by Alexander Kuester
+void TabToolbar::SetStylesheet(const QString& styleSheet) {
+	setStyleSheet(styleSheet);
+}
 
-    return nullptr;
+// Created by Alexander Kuester
+void TabToolbar::SetTabBarStylesheet(const QString& styleSheet) {
+	tabBar->setStyleSheet(styleSheet);
+}
+
+// Created by Alexander Kuester
+void TabToolbar::SetTabBarTabStylesheet(const QString& styleSheet) {
+	tabBar->tabBar()->setStyleSheet(styleSheet);
+}
+
+// Created by Alexander Kuester
+void TabToolbar::SetHideButtonStylesheet(const QString& styleSheet) {
+	hideButton->setStyleSheet(styleSheet);
+}
+
+// Created by Alexander Kuester
+void TabToolbar::DestroyPage(int index) {
+	assert(index >= 0 && index < pages.size());	// Index out of range
+	pages.erase(pages.begin() + index);
+	for (int i = index; i < pages.size(); i++) { pages.at(i)->setIndex(i); }
+	tabBar->removeTab(index);
+}
+
+// Created by Alexander Kuester
+void TabToolbar::DestroyPage(Page * page) {
+	assert(page != nullptr); // Nullptr provided
+	DestroyPage(page->getIndex());
 }

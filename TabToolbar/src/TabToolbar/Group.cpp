@@ -26,14 +26,11 @@
 #include <QStyle>
 #include <QPainter>
 #include <QProxyStyle>
-#include <QScreen>
 #include <QStyleOptionToolButton>
-#include <stdexcept>
 #include <TabToolbar/Group.h>
-#include <TabToolbar/Styles.h>
-#include <TabToolbar/StyleTools.h>
 #include <TabToolbar/SubGroup.h>
 #include <TabToolbar/TabToolbar.h>
+#include <stdexcept>
 #include "CompactToolButton.h"
 #include "ToolButtonStyle.h"
 
@@ -84,12 +81,23 @@ Group::Group(const QString& name, QWidget* parent) : QFrame(parent)
 
     outerLayout->addWidget(groupName);
 
-    const auto* parentTT = _FindTabToolbarParent(*this);
-    if (!parentTT)
+    unsigned groupMaxHeight;
+    unsigned rowCount;
+    bool found = false;
+    QObject* par = this;
+    do
+    {
+        par = par->parent();
+        const TabToolbar* tt = dynamic_cast<TabToolbar*>(par);
+        if(tt)
+        {
+            groupMaxHeight = tt->GroupMaxHeight();
+            rowCount = tt->RowCount();
+            found = true;
+        }
+    } while(par && !found);
+    if(!found)
         throw std::runtime_error("Group should be constructed inside TabToolbar!");
-
-    unsigned groupMaxHeight = parentTT->GroupMaxHeight();
-    unsigned rowCount = parentTT->RowCount();
     const unsigned height = groupMaxHeight + groupName->height() + rowCount - 1;
     setMinimumHeight(height);
     setMaximumHeight(height);
@@ -102,15 +110,18 @@ SubGroup* Group::AddSubGroup(SubGroup::Align align)
     return sgrp;
 }
 
+// Modified by Alexander Kuester
 QFrame* Group::CreateSeparator()
 {
     QFrame* separator = new QFrame(this);
+	separator->setObjectName("TabToolBarGroupSeperatorLine");	// Added by Alexander Kuester
     separator->setProperty("TTSeparator", QVariant(true));
     separator->setAutoFillBackground(false);
     separator->setFrameShadow(QFrame::Plain);
     separator->setLineWidth(1);
     separator->setMidLineWidth(0);
     separator->setFrameShape(QFrame::VLine);
+	my_separators.push_back(separator);
     return separator;
 }
 
@@ -127,7 +138,7 @@ void Group::AddAction(QToolButton::ToolButtonPopupMode type, QAction* action, QM
     }
     else
     {
-        const int iconSize = GetPixelMetric(QStyle::PM_LargeIconSize) * GetScaleFactor(*this);
+        const int iconSize = QApplication::style()->pixelMetric(QStyle::PM_LargeIconSize);
         QToolButton* btn = new QToolButton(this);
         btn->setProperty("TTInternal", QVariant(true));
         btn->setAutoRaise(true);
@@ -140,7 +151,27 @@ void Group::AddAction(QToolButton::ToolButtonPopupMode type, QAction* action, QM
         if(menu)
             btn->setMenu(menu);
         innerLayout->addWidget(btn);
+		actionButtonMap.insert_or_assign(action, btn);		// Added by Alexander Kuester
     }
+}
+
+// Added by Alexander Kuester
+void Group::RemoveAction(QAction* action) {
+	actionButtonMapIterator btn = actionButtonMap.find(action);
+	assert(btn != actionButtonMap.end());	// Action was not added
+	assert(btn->second);	// Nullptr stored
+	innerLayout->removeWidget(btn->second);
+	actionButtonMap.erase(action);
+}
+
+// Added by Alexander Kuester
+void Group::SetToolButtonStylesheet(const QString & sheet) {
+	for (auto itm : actionButtonMap) { itm.second->setStyleSheet(sheet); }
+}
+
+// Added by Alexander Kuester
+void Group::SetSeparatorStyleSheet(const QString & sheet) {
+	for (auto itm : my_separators) { itm->setStyleSheet(sheet); }
 }
 
 void Group::AddWidget(QWidget* widget)
