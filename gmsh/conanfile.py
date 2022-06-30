@@ -1,8 +1,6 @@
-from conans import ConanFile, tools
+from conans import ConanFile
 from conan.tools.cmake import CMake, CMakeToolchain
 import os
-import sys
-from pathlib import Path
 
 required_conan_version = '>=1.50.0'
 
