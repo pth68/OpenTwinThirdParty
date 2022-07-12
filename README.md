@@ -37,22 +37,13 @@ To upload a package to the Artifactory, the following steps are required:
    ```
    cd base64
    ```
-2. Install any third-party libraries that might be missing, for both `debug` and `default` profiles:
-   ```
-   conan install --build missing --options *:shared=True --profile default .
-   conan install --build missing --options *:shared=True --profile debug .
-   ```
-3. Create the package for both `debug` and `default`: 
+2. Create the package for both `debug` and `default`: 
    ```bash
-   conan create . opentwin/thirdparty --options *:shared=True --profile default
-   conan create . opentwin/thirdparty --options *:shared=True --profile debug
+   conan create . opentwin/thirdparty --build missing --options *:shared=True --profile default
+   conan create . opentwin/thirdparty --build missing --options *:shared=True --profile debug
    ```
-   This will build the package for you build configuration and install the created artifacts.
-4. Export the package: 
-   ```bash
-   conan export . base64/1.0.0@opentwin/thirdparty
-   ```
-5. Upload the package to the Artifactory: 
+   This will build the package and install the created artifacts if a pre-built binary for your profile does not yet exist.
+4. Upload the package to the Artifactory: 
    ```bash
    conan upload base64/1.0.0@opentwin/thirdparty --all --remote=opentwin
    ```
@@ -63,11 +54,11 @@ To upload a package to the Artifactory, the following steps are required:
 
 ## Updating a Dependency
 
-To update a dependency to a newer version, the old version can be overridden. The sources and binaries of the old version are still availabe in the Artifactory, if needed!
+To update a dependency to a newer version, the old version in this repository can be overridden. The sources and binaries of the old version are still availabe in the Artifactory, if needed!
 
 1. Find the original sourcecode of the old version. The link to the source should be given in the `url` property in `conanfile.py`.
-2. Create a diff between the files in this repo and the original source to get an overview over what has been altered for the Conan port. Files may have been deleted or changed!
-3. Get the sourcecode of the new version. Adapt the changes made to the old code as far as possible.
+2. Compare the files in this repo and the original source to get an overview over what has been altered for the Conan port. Files may have been deleted or changed!
+3. Get the sourcecode of the new version. Adapt the changes made to the old code.
 4. Overwrite the old sources in this repository with the new sources
 5. Update the `conanfile.py`: A new `version` has to be set and the `url` should be updated to the source of the new version!
 5. Create a new Conan package and upload it to the Artifactory.
@@ -123,9 +114,15 @@ To add a new dependency with the name "Foo" to this repository, the following st
       def package_info(self):
          self.cpp_info.libs = tools.collect_libs(self)
    ```
-2. Copy all sources of the dependency into the folder. If required, modify the `CMakeLists.txt` in order to work with dependencies pulled in by conan (`find_package()` and `target_link_library()` may have to be altered).
-3. De-clutter the sources if possible! Anything thats not needed for the build, like documentation or examples may be removed to save some space.
-4. If everything is working, create a new Conan package and upload it to the Artifactory.
+2. Copy all sources of the dependency into the folder. If required, modify the `CMakeLists.txt` in order to work 
+   with dependencies pulled in by Conan (`find_package()` and `target_link_library()` may have to be altered).
+4. Create a package like described above. Once the package has been successfully built, it is in the local cache and
+   can be tested by adding it to the requirements.txt of OpenTwin:
+   ```
+   foo/1.0.0@opentwin/thirdparty
+   ```
+5. If the library links and works as expected, upload the newly built Conan package to the Artifactory.
+   Remember to provide both `debug` and `release` binaries!
 
 ## Further reading…
 
