@@ -16,7 +16,13 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+set(TT_BUILD_EXAMPLES FALSE CACHE BOOL "Build example projects")
+
 add_subdirectory(src/TabToolbar)
+
+if(TT_BUILD_EXAMPLES)
+    add_subdirectory(examples/Test)
+endif()
 
 install(DIRECTORY include
         DESTINATION .
