@@ -12,7 +12,7 @@ class GmshConan(ConanFile):
     license = "GPL-2.0-only"
     generators = "cmake_find_package"
     settings = "os", "arch", "compiler", "build_type"
-    exports_sources = "CMakeLists.txt", "api/*", "Common/*", "contrib/*", "Fltk/*", "Geo/*", "Grahpics/*", "Mesh/*", "Numeric/*", "Parser/*", "Plugin/*", "Post/*", "Solver/*", "utils/*", "LICENSE.txt", "CREDITS.txt", "CHANGELOG.txt"
+    exports_sources = "CMakeLists.txt", "api/*", "Common/*", "contrib/*", "Fltk/*", "Geo/*", "Grahpics/*", "Mesh/*", "Numeric/*", "Parser/*", "Plugin/*", "Post/*", "Solver/*", "utils/*", "doc/*", "LICENSE.txt", "CREDITS.txt", "CHANGELOG.txt"
     options = {"shared": [True, False], "fPIC": [True, False]}
     default_options = {
         "shared": False,

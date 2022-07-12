@@ -1,0 +1,62 @@
+{
+ "graph_lock": {
+  "nodes": {
+   "0": {
+    "ref": "gmsh/4.8.0",
+    "options": "shared=True\nbrotli:shared=True\nbzip2:build_executable=True\nbzip2:shared=True\nfreetype:shared=True\nfreetype:subpixel=False\nfreetype:with_brotli=True\nfreetype:with_bzip2=True\nfreetype:with_png=True\nfreetype:with_zlib=True\nlibpng:api_prefix=\nlibpng:shared=True\nlibpng:sse=True\nzlib:shared=True",
+    "requires": [
+     "1"
+    ],
+    "path": "conanfile.py",
+    "context": "host"
+   },
+   "1": {
+    "ref": "freetype/2.10.4",
+    "options": "shared=True\nsubpixel=False\nwith_brotli=True\nwith_bzip2=True\nwith_png=True\nwith_zlib=True\nbrotli:shared=True\nbzip2:build_executable=True\nbzip2:shared=True\nlibpng:api_prefix=\nlibpng:shared=True\nlibpng:sse=True\nzlib:shared=True",
+    "package_id": "502fb0910faf9e6a163421a78f2ef5e62f15891b",
+    "prev": "0",
+    "requires": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "context": "host"
+   },
+   "2": {
+    "ref": "libpng/1.6.37",
+    "options": "api_prefix=\nshared=True\nsse=True\nzlib:shared=True",
+    "package_id": "2026793585d04329599fcef815fc80b19828f099",
+    "prev": "0",
+    "requires": [
+     "3"
+    ],
+    "context": "host"
+   },
+   "3": {
+    "ref": "zlib/1.2.12",
+    "options": "shared=True",
+    "package_id": "bf9ec17af5844bd8d3cc139070000dc26fc5f076",
+    "prev": "0",
+    "context": "host"
+   },
+   "4": {
+    "ref": "bzip2/1.0.8",
+    "options": "build_executable=True\nshared=True",
+    "package_id": "93732b8419686234c98e4e880c6f87289cf78b4f",
+    "prev": "0",
+    "context": "host"
+   },
+   "5": {
+    "ref": "brotli/1.0.9",
+    "options": "shared=True",
+    "package_id": "bf9ec17af5844bd8d3cc139070000dc26fc5f076",
+    "prev": "0",
+    "context": "host"
+   }
+  },
+  "revisions_enabled": false
+ },
+ "version": "0.4",
+ "profile_host": "[settings]\narch=x86_64\narch_build=x86_64\nbuild_type=Debug\ncompiler=Visual Studio\ncompiler.runtime=MDd\ncompiler.version=17\nos=Windows\nos_build=Windows\n[options]\n*:shared=True\n[build_requires]\n[env]\n"
+}

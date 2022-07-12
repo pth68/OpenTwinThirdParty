@@ -1565,6 +1565,17 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Common/GmshConfig.h.in
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Common/GmshVersion.h.in
                ${CMAKE_CURRENT_BINARY_DIR}/Common/GmshVersion.h)
 
+# the texi and pypi version files are modified in the source directory (not
+# ideal for version.texi, but since git tracks the contents of the file this is
+# acceptable as it will only change when the actual version is changed - not for
+# each git hash; setup.py is not under version control)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/doc/texinfo/version.texi.in
+               ${CMAKE_CURRENT_SOURCE_DIR}/doc/texinfo/version.texi)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/utils/pypi/gmsh/setup.py.in
+               ${CMAKE_CURRENT_SOURCE_DIR}/utils/pypi/gmsh/setup.py)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/utils/pypi/gmsh-dev/setup.py.in
+               ${CMAKE_CURRENT_SOURCE_DIR}/utils/pypi/gmsh-dev/setup.py)
+
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/version.txt ${GMSH_SHORT_VERSION})
 
 # process cmake environment variables so we can append them to the -I include
@@ -1892,9 +1903,15 @@ if(INSTALL_SDK_README)
   configure_file(${SDK_FILE} ${CMAKE_CURRENT_BINARY_DIR}/README.txt)
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/README.txt DESTINATION .)
 endif()
+install(FILES ${WELCOME_FILE} DESTINATION ${GMSH_DOC} RENAME README.txt)
 install(FILES ${LICENSE_FILE} DESTINATION ${GMSH_DOC})
 install(FILES ${CREDITS_FILE} DESTINATION ${GMSH_DOC})
 install(FILES ${CHANGELOG_FILE} DESTINATION ${GMSH_DOC})
+install(FILES ${TUTORIAL_GEO_FILES} DESTINATION ${GMSH_DOC}/tutorial)
+install(FILES ${TUTORIAL_CPP_FILES} DESTINATION ${GMSH_DOC}/tutorial/c++)
+install(FILES ${TUTORIAL_C_FILES} DESTINATION ${GMSH_DOC}/tutorial/c)
+install(FILES ${TUTORIAL_PY_FILES} DESTINATION ${GMSH_DOC}/tutorial/python)
+install(FILES ${TUTORIAL_JL_FILES} DESTINATION ${GMSH_DOC}/tutorial/julia)
 foreach(DIR ${DEMOS_DIRS})
   get_filename_component(DEMOS_DIR_NAME ${DIR} NAME)
   file(GLOB DEMO_FILES ${DIR}/?*.*)
@@ -1997,6 +2014,82 @@ if(APPLE AND ENABLE_BUILD_LIB)
     endforeach()
   endif()
 endif()
+
+set(CPACK_PACKAGE_VENDOR "Christophe Geuzaine and Jean-Francois Remacle")
+set(CPACK_PACKAGE_VERSION_MAJOR ${GMSH_MAJOR_VERSION})
+set(CPACK_PACKAGE_VERSION_MINOR ${GMSH_MINOR_VERSION})
+set(CPACK_PACKAGE_VERSION_PATCH ${GMSH_PATCH_VERSION})
+set(CPACK_PACKAGE_DESCRIPTION_FILE ${WELCOME_FILE})
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY
+    "3D finite element mesh generator with built-in CAD engine and post-processor")
+if(GMSH_EXTRA_VERSION MATCHES "-git.*") # so that we'll overwrite the archives
+  set(CPACK_PACKAGE_FILE_NAME gmsh${GMSH_EXTRA_VERSION_ORIG}-git-${GMSH_OS})
+  set(CPACK_SOURCE_PACKAGE_FILE_NAME gmsh${GMSH_EXTRA_VERSION_ORIG}-git-source)
+else()
+  set(CPACK_PACKAGE_FILE_NAME gmsh-${GMSH_VERSION}-${GMSH_OS})
+  set(CPACK_SOURCE_PACKAGE_FILE_NAME gmsh-${GMSH_VERSION}-source)
+endif()
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "gmsh")
+set(CPACK_RESOURCE_FILE_LICENSE ${LICENSE_FILE})
+set(CPACK_RESOURCE_FILE_README ${WELCOME_FILE})
+set(CPACK_RESOURCE_FILE_WELCOME ${WELCOME_FILE})
+set(CPACK_PACKAGE_EXECUTABLE "gmsh")
+if(ENABLE_PACKAGE_STRIP)
+  set(CPACK_STRIP_FILES TRUE)
+else()
+  set(CPACK_STRIP_FILES FALSE)
+endif()
+set(CPACK_SOURCE_GENERATOR TGZ)
+set(CPACK_SOURCE_IGNORE_FILES "${CMAKE_CURRENT_BINARY_DIR}" "/CVS/" "/.svn" "/.git"
+    "~$" "DS_Store$" "GmshConfig.h$" "GmshVersion.h$" "/benchmarks/" "/tmp/"
+    "/bin/" "/lib/" "/nightly/" "GPATH" "GRTAGS" "GSYMS" "GTAGS" "/HTML/"
+    "/contrib/3M/" "/contrib/Parasolid/")
+
+if(UNIX)
+  # make sure we remove previous installs before doing the next one (on Mac for
+  # example "make package; make package_source" would lead to huge file lists
+  # getting generated due to the 'Applications' symlink in the bundle)
+  set(CPACK_INSTALL_COMMANDS "rm -rf ${CMAKE_CURRENT_BINARY_DIR}/_CPack_Packages")
+endif()
+
+if(APPLE AND ENABLE_OS_SPECIFIC_INSTALL AND HAVE_FLTK)
+  set(CPACK_GENERATOR Bundle)
+  set(CPACK_BUNDLE_NAME Gmsh)
+  file(READ ${CMAKE_CURRENT_SOURCE_DIR}/utils/misc/gmsh_app.plist F0)
+  string(REPLACE GMSH_VERSION "${GMSH_VERSION}" F1 "${F0}")
+  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/Info.plist "${F1}")
+  set(CPACK_BUNDLE_PLIST ${CMAKE_CURRENT_BINARY_DIR}/Info.plist)
+  set(CPACK_BUNDLE_ICON ${CMAKE_CURRENT_SOURCE_DIR}/Fltk/MacIcons.icns)
+  if(PACKAGER STREQUAL "geuzaine - removed: we sign on a separate machine")
+    # codesigning requires CMake >= 3.2
+    set(CPACK_BUNDLE_APPLE_CERT_APP "Developer ID Application: Christophe Geuzaine")
+  endif()
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/Fltk/MacIconsGeo.icns DESTINATION .
+          RENAME GmshGeo.icns)
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/Fltk/MacIconsMsh.icns DESTINATION .
+          RENAME GmshMsh.icns)
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/Fltk/MacIconsSol.icns DESTINATION .
+          RENAME GmshSol.icns)
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/Fltk/MacIconsPos.icns DESTINATION .
+          RENAME GmshPos.icns)
+  set(CPACK_PACKAGE_ICON ${CMAKE_CURRENT_SOURCE_DIR}/Fltk/MacIcons.icns)
+elseif(WIN32)
+  set(CPACK_GENERATOR ZIP)
+else()
+  set(CPACK_GENERATOR TGZ)
+endif()
+
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/utils/wrappers/gmshpy AND
+   ENABLE_PRIVATE_API AND ENABLE_WRAP_PYTHON AND HAVE_PYTHON)
+  add_subdirectory(utils/wrappers/gmshpy)
+endif()
+
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/utils/wrappers/java AND
+   ENABLE_PRIVATE_API AND ENABLE_WRAP_JAVA)
+  add_subdirectory(utils/wrappers/java)
+endif()
+
+include(CPack)
 
 macro(filter_tests IN OUT)
   unset(${OUT})

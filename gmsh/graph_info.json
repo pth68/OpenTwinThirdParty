@@ -1,0 +1,66 @@
+{
+ "options": [
+  [
+   "shared",
+   "True"
+  ],
+  [
+   "brotli:shared",
+   "True"
+  ],
+  [
+   "bzip2:build_executable",
+   "True"
+  ],
+  [
+   "bzip2:shared",
+   "True"
+  ],
+  [
+   "freetype:shared",
+   "True"
+  ],
+  [
+   "freetype:subpixel",
+   "False"
+  ],
+  [
+   "freetype:with_brotli",
+   "True"
+  ],
+  [
+   "freetype:with_bzip2",
+   "True"
+  ],
+  [
+   "freetype:with_png",
+   "True"
+  ],
+  [
+   "freetype:with_zlib",
+   "True"
+  ],
+  [
+   "libpng:api_prefix",
+   ""
+  ],
+  [
+   "libpng:shared",
+   "True"
+  ],
+  [
+   "libpng:sse",
+   "True"
+  ],
+  [
+   "zlib:shared",
+   "True"
+  ]
+ ],
+ "root": {
+  "name": "gmsh",
+  "version": "4.8.0",
+  "user": null,
+  "channel": null
+ }
+}

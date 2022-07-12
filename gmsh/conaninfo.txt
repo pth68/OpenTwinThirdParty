@@ -1,0 +1,50 @@
+[settings]
+    arch=x86_64
+    build_type=Debug
+    compiler=Visual Studio
+    compiler.runtime=MDd
+    compiler.version=17
+    os=Windows
+
+[requires]
+    freetype/2.Y.Z
+
+[options]
+    shared=True
+
+[full_settings]
+    arch=x86_64
+    build_type=Debug
+    compiler=Visual Studio
+    compiler.runtime=MDd
+    compiler.version=17
+    os=Windows
+
+[full_requires]
+    brotli/1.0.9:bf9ec17af5844bd8d3cc139070000dc26fc5f076
+    bzip2/1.0.8:93732b8419686234c98e4e880c6f87289cf78b4f
+    freetype/2.10.4:502fb0910faf9e6a163421a78f2ef5e62f15891b
+    libpng/1.6.37:2026793585d04329599fcef815fc80b19828f099
+    zlib/1.2.12:bf9ec17af5844bd8d3cc139070000dc26fc5f076
+
+[full_options]
+    shared=True
+    brotli:shared=True
+    bzip2:build_executable=True
+    bzip2:shared=True
+    freetype:shared=True
+    freetype:subpixel=False
+    freetype:with_brotli=True
+    freetype:with_bzip2=True
+    freetype:with_png=True
+    freetype:with_zlib=True
+    libpng:api_prefix=
+    libpng:shared=True
+    libpng:sse=True
+    zlib:shared=True
+
+[recipe_hash]
+
+
+[env]
+

@@ -16,8 +16,3 @@ doc/doxygen/html
 ## CLion directories
 .idea
 cmake-build-*
-Find*.cmake
-conan.lock
-conanbuildinfo.txt
-conaninfo.txt
-graph_info.json
